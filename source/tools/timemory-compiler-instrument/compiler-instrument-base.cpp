@@ -468,9 +468,6 @@ finalize()
         return;
     }
 
-    // acquire global lock
-    tim::auto_lock_t _projlk{ tim::type_mutex<tim::project::compiler_instrument>() };
-
     bool _remove_manager = false;
     if(get_trace_vec())
     {
