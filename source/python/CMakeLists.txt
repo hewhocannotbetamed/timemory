@@ -55,7 +55,7 @@ function(TIMEMORY_CONFIGURE_PYTARGET _TARGET)
         ARCHIVE_OUTPUT_DIRECTORY    ${PROJECT_BINARY_DIR}/timemory${_SUBDIR}
         RUNTIME_OUTPUT_DIRECTORY    ${PROJECT_BINARY_DIR}/timemory${_SUBDIR}
         PDB_OUTPUT_DIRECTORY        ${PROJECT_BINARY_DIR}/timemory${_SUBDIR}
-        INSTALL_RPATH_USE_LINK_PATH ON
+        INSTALL_RPATH_USE_LINK_PATH OFF
         ${EXTRA_PROPERTIES})
 
     set(_PYLIB ${CMAKE_INSTALL_PYTHONDIR}/timemory${_SUBDIR})
@@ -87,7 +87,7 @@ if(TIMEMORY_BUILD_PYTHON)
     add_library(timemory-python-compile-options INTERFACE)
     add_library(timemory::timemory-python-compile-options ALIAS
         timemory-python-compile-options)
-    add_cxx_flag_if_avail("-frtti" timemory-python-compile-options)
+    # add_cxx_flag_if_avail("-frtti" timemory-python-compile-options)
     add_cxx_flag_if_avail("-Wno-unused-value" timemory-python-compile-options)
     add_cxx_flag_if_avail("-Wno-range-loop-analysis" timemory-python-compile-options)
     add_cxx_flag_if_avail("-ftls-model=global-dynamic" timemory-python-compile-options)
@@ -135,13 +135,15 @@ if(TIMEMORY_BUILD_PYTHON)
         timemory::timemory-headers
         timemory::timemory-cxx-shared
         timemory::timemory-compile-options
-        timemory::timemory-external-shared
-        timemory::timemory-mpip-library
-        timemory::timemory-ompt-library
-        timemory::timemory-ncclp-library
-        timemory::timemory-mallocp-library
+        # timemory::timemory-external-shared
+        # timemory::timemory-mpip-library
+        # timemory::timemory-ompt-library
+        # timemory::timemory-ncclp-library
+        # timemory::timemory-mallocp-library
         timemory::timemory-python-compile-options
-        ${_visibility})
+        timemory::timemory-hidden-visibility
+        # ${_visibility}
+    )
 
     target_compile_definitions(libpytimemory-interface INTERFACE
         TIMEMORY_PYBIND11_SOURCE)

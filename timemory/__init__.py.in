@@ -37,7 +37,10 @@ __email__ = "jrmadsen@lbl.gov"
 __status__ = "Development"
 
 import os
+import platform
 
+if platform.platform() == "Darwin":
+    os.environ.setdefault("TIMEMORY_LIBRARY_CTOR", "OFF")
 os.environ.setdefault("TIMEMORY_BANNER", "OFF")
 os.environ.setdefault("PROFILESELECTED", "1")
 """
