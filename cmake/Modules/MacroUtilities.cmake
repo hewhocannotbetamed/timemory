@@ -224,8 +224,8 @@ FUNCTION(ADD_TIMEMORY_GOOGLE_TEST TEST_NAME)
         add_dependencies(timemory-test ${TEST_NAME})
 
         if(WIN32)
-            set_target_properties(${TEST_NAME} 
-                PROPERTIES 
+            set_target_properties(${TEST_NAME}
+                PROPERTIES
                 FOLDER                   tests
                 RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/runtime
                 LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/runtime
