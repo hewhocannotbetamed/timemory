@@ -135,15 +135,18 @@ if(TIMEMORY_BUILD_PYTHON)
         timemory::timemory-headers
         timemory::timemory-cxx-shared
         timemory::timemory-compile-options
-        # timemory::timemory-external-shared
-        # timemory::timemory-mpip-library
-        # timemory::timemory-ompt-library
-        # timemory::timemory-ncclp-library
-        # timemory::timemory-mallocp-library
+        timemory::timemory-external-shared
+        timemory::timemory-mpip-library
+        timemory::timemory-ompt-library
+        timemory::timemory-ncclp-library
+        timemory::timemory-mallocp-library
         timemory::timemory-python-compile-options
-        timemory::timemory-hidden-visibility
-        # ${_visibility}
+        ${_visibility}
     )
+
+    if(APPLE)
+        target_link_options(libpytimemory-interface INTERFACE -undefined dynamic_lookup)
+    endif()
 
     target_compile_definitions(libpytimemory-interface INTERFACE
         TIMEMORY_PYBIND11_SOURCE)
