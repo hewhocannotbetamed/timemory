@@ -687,9 +687,9 @@ if(TIMEMORY_USE_PYTHON AND NOT TIMEMORY_BUILD_PYTHON)
 
 endif()
 
-if(TIMEMORY_USE_PYTHON)
-    include(PythonConfig)
-else()
+include(PythonConfig)
+
+if(NOT TIMEMORY_USE_PYTHON)
     set(TIMEMORY_BUILD_PYTHON OFF)
     inform_empty_interface(timemory-python "Python embedded interpreter")
     inform_empty_interface(timemory-plotting "Python plotting from C++")

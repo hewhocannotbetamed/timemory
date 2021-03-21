@@ -55,7 +55,7 @@ function(TIMEMORY_CONFIGURE_PYTARGET _TARGET)
         ARCHIVE_OUTPUT_DIRECTORY    ${PROJECT_BINARY_DIR}/timemory${_SUBDIR}
         RUNTIME_OUTPUT_DIRECTORY    ${PROJECT_BINARY_DIR}/timemory${_SUBDIR}
         PDB_OUTPUT_DIRECTORY        ${PROJECT_BINARY_DIR}/timemory${_SUBDIR}
-        INSTALL_RPATH_USE_LINK_PATH OFF
+        INSTALL_RPATH_USE_LINK_PATH ON
         ${EXTRA_PROPERTIES})
 
     set(_PYLIB ${CMAKE_INSTALL_PYTHONDIR}/timemory${_SUBDIR})
@@ -69,6 +69,9 @@ function(TIMEMORY_CONFIGURE_PYTARGET _TARGET)
     if(UNIX AND NOT APPLE)
         set_target_properties(${_TARGET} PROPERTIES INSTALL_RPATH
             "\$ORIGIN/${LIB_RELPATH}:\$ORIGIN/${LIB_RELPATH}/timemory${_SUBDIR}:\$ORIGIN/../../..:\   $ORIGIN/../../../timemory${_SUBDIR}:\$ORIGIN:${CMAKE_INSTALL_RPATH}")
+    elseif(APPLE)
+        set_target_properties(${_TARGET} PROPERTIES INSTALL_RPATH
+            "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
     endif()
 
     install(TARGETS ${_TARGET}
@@ -87,7 +90,7 @@ if(TIMEMORY_BUILD_PYTHON)
     add_library(timemory-python-compile-options INTERFACE)
     add_library(timemory::timemory-python-compile-options ALIAS
         timemory-python-compile-options)
-    # add_cxx_flag_if_avail("-frtti" timemory-python-compile-options)
+    add_cxx_flag_if_avail("-frtti" timemory-python-compile-options)
     add_cxx_flag_if_avail("-Wno-unused-value" timemory-python-compile-options)
     add_cxx_flag_if_avail("-Wno-range-loop-analysis" timemory-python-compile-options)
     add_cxx_flag_if_avail("-ftls-model=global-dynamic" timemory-python-compile-options)
@@ -128,10 +131,17 @@ if(TIMEMORY_BUILD_PYTHON)
         list(APPEND pybind_libs timemory::timemory-lto)
     endif()
 
+    if(Python3_LIBRARIES)
+        list(APPEND pybind_libs ${Python3_LIBRARIES})
+    elseif(Python3_LIBRARY)
+        list(APPEND pybind_libs ${Python3_LIBRARY})
+    elseif(PYTHON_LIBRARY)
+        list(APPEND pybind_libs ${PYTHON_LIBRARY})
+    endif()
+
     add_library(libpytimemory-interface INTERFACE)
     target_link_libraries(libpytimemory-interface INTERFACE
         ${pybind_libs}
-        timemory::timemory-python
         timemory::timemory-headers
         timemory::timemory-cxx-shared
         timemory::timemory-compile-options
@@ -144,7 +154,7 @@ if(TIMEMORY_BUILD_PYTHON)
         ${_visibility}
     )
 
-    if(APPLE)
+    if(APPLE AND (CMAKE_CXX_COMPILER_IS_CLANG OR CMAKE_CXX_COMPILER_IS_APPLE_CLANG))
         target_link_options(libpytimemory-interface INTERFACE -undefined dynamic_lookup)
     endif()
 

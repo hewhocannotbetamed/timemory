@@ -4,6 +4,11 @@
 # include guard
 include_guard(DIRECTORY)
 
+# return if python disabled
+if(NOT TIMEMORY_USE_PYTHON)
+    return()
+endif()
+
 # Stops lookup as soon as a version satisfying version constraints is found.
 set(Python3_FIND_STRATEGY "LOCATION" CACHE STRING
     "Stops lookup as soon as a version satisfying version constraints is found")

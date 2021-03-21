@@ -30,10 +30,6 @@
 #include "timemory/settings/declaration.hpp"
 #include "timemory/utility/popen.hpp"
 
-#if defined(TIMEMORY_USE_PYTHON)
-#    include "pybind11/embed.h"
-#endif
-
 namespace tim
 {
 //
