@@ -202,8 +202,48 @@ get_stream(const pytim::pyenum_set_t& _types, std::index_sequence<Idx...>)
 //  Python wrappers
 //======================================================================================//
 
-PYBIND11_MODULE(libpytimemory, tim)
+#define name libpytimemory
+#define variable tim
+
+static ::pybind11::module_::module_def PYBIND11_CONCAT(pybind11_module_def_,
+                                                       name) PYBIND11_MAYBE_UNUSED;
+
+PYBIND11_MAYBE_UNUSED
+static void PYBIND11_CONCAT(pybind11_init_, name)(::pybind11::module_&);
+
+extern "C" PYBIND11_MAYBE_UNUSED PYBIND11_EXPORT PyObject*
+                                                 PyInit_libpytimemory();
+
+extern "C" PYBIND11_EXPORT PyObject*
+                           PyInit_libpytimemory()
 {
+    puts("[libpytimemory]> enabling signal handling...");
+    tim::enable_signal_detection();
+    puts("[libpytimemory]> checking python version...");
+    PYBIND11_CHECK_PYTHON_VERSION
+    puts("[libpytimemory]> ensuring internals are ready...");
+    PYBIND11_ENSURE_INTERNALS_READY
+
+    puts("[libpytimemory]> creating extension module...");
+    auto m = ::pybind11::module_::create_extension_module(
+        PYBIND11_TOSTRING(name), nullptr, &PYBIND11_CONCAT(pybind11_module_def_, name));
+    try
+    {
+        puts("[libpytimemory]> initializing...");
+        PYBIND11_CONCAT(pybind11_init_, name)(m);
+        puts("[libpytimemory]> loaded.");
+        return m.ptr();
+    }
+    PYBIND11_CATCH_INIT_EXCEPTIONS
+}
+
+void PYBIND11_CONCAT(pybind11_init_, name)(::pybind11::module_& variable)
+{
+    puts("[libpytimemory]> starting definition...");
+
+#undef name
+#undef variable
+
     //----------------------------------------------------------------------------------//
     //
     auto _settings       = tim::settings::shared_instance();
@@ -936,4 +976,6 @@ PYBIND11_MODULE(libpytimemory, tim)
     _socket.def("listen", _socket_listen, "Listen on a socket (server)", py::arg("name"),
                 py::arg("port"), py::arg("max_packets") = 0);
 #endif
+
+    puts("[libpytimemory]> definition completed...");
 }
