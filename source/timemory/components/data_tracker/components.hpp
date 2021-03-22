@@ -37,12 +37,6 @@
 #include "timemory/settings/declaration.hpp"
 #include "timemory/units.hpp"
 
-#if defined(TIMEMORY_PYBIND11_SOURCE)
-#    include "pybind11/cast.h"
-#    include "pybind11/pybind11.h"
-#    include "pybind11/stl.h"
-#endif
-
 #include <cassert>
 #include <cstdint>
 #include <limits>

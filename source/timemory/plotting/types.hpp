@@ -38,9 +38,6 @@ namespace tim
 //
 #if defined(TIMEMORY_USE_PYTHON)
 namespace py = pybind11;
-#else
-namespace py
-{}
 #endif
 //
 //--------------------------------------------------------------------------------------//

@@ -48,6 +48,10 @@ function(TIMEMORY_CONFIGURE_PYTARGET _TARGET)
         set(EXTRA_PROPERTIES LINKER_LANGUAGE CUDA)
     endif()
 
+    if(NOT PYTHON_MODULE_EXTENSION)
+        set(PYTHON_MODULE_EXTENSION "${CMAKE_SHARED_MODULE_SUFFIX}")
+    endif()
+
     set_target_properties(${_TARGET} PROPERTIES
         PREFIX                      ""
         SUFFIX                      "${PYTHON_MODULE_EXTENSION}"

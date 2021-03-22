@@ -80,7 +80,11 @@ get_json(Archive& ar, const pytim::pyenum_set_t& _types,
     if(_types.empty() || _types.count(tim::component::properties<Tp>{}()) > 0)
     {
         if(!tim::storage<Tp>::instance()->empty())
-            tim::storage<Tp>::instance()->dmp_get(ar);
+        {
+            auto data = std::vector<std::vector<tim::basic_tree<tim::node::tree<Tp>>>>{};
+            tim::storage<Tp>::instance()->dmp_get(data);
+            tim::operation::serialization<Tp>{}(ar, data);
+        }
     }
 }
 //
@@ -843,22 +847,19 @@ PYBIND11_MODULE(libpytimemory, tim)
              py::arg("parser") = py::none{});
 
     static auto _add_arguments = [](py::object parser, py::object subparser) {
-        auto locals = py::dict("parser"_a = parser, "subparser"_a = subparser);
-        py::exec(R"(
-        import argparse
-        from timemory import settings
-
-        if parser is None:
-            parser = argparse.ArgumentParser()
-
-        settings.add_argparse(parser, subparser=subparser)
-        parser.add_argument('--timemory-echo-dart', required=False,
-                            action='store_true', help="Echo dart tags for CDash")
-        parser.add_argument('--timemory-mpl-backend', required=False,
-                            default="default", type=str, help="Matplotlib backend")
-        )",
-                 py::globals(), locals);
-        return locals["parser"].cast<py::object>();
+        auto margparse = py::module::import("argparse");
+        auto msettings = py::module::import("timemory.settings");
+        if(parser.is_none())
+            parser = margparse.attr("ArgumentParser")();
+        msettings.attr("add_argparse")(parser, subparser);
+        parser.attr("add_argument")("--timemory-echo-dart", py::arg("required") = false,
+                                    py::arg("action") = "store_true",
+                                    py::arg("help")   = "Echo dart tags for CDash");
+        parser.attr("add_argument")("--timemory-mpl-backend", py::arg("required") = false,
+                                    py::arg("default") = "default",
+                                    py::arg("type")    = py::str{},
+                                    py::arg("help")    = "Matplotlib backend");
+        return parser;
     };
 
     auto _add_args_and_parse = [](py::object parser, py::object subparser) {

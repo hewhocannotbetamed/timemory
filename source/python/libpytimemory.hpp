@@ -136,19 +136,9 @@ write_ctest_notes(py::object man, std::string directory, bool append)
     ss << "ENDIF(NOT \"${CTEST_NOTES_FILES}\" STREQUAL \"\")" << std::endl;
     ss << std::endl;
 
-    // create directory (easier in Python)
-    auto locals = py::dict("directory"_a = directory);
-    py::exec(R"(
-             import os
-
-             if not os.path.exists(directory) and directory != '':
-                 os.makedirs(directory)
-
-             file_path = os.path.join(directory, "CTestNotes.cmake")
-             )",
-             py::globals(), locals);
-
-    std::string   file_path = locals["file_path"].cast<std::string>();
+    tim::makedir(directory);
+    std::string file_path =
+        tim::utility::path{ TIMEMORY_JOIN("/", directory, "CTestNotes.cmake") };
     std::ofstream outf;
     if(append)
         outf.open(file_path.c_str(), std::ios::app);
@@ -180,13 +170,7 @@ namespace opt
 void
 safe_mkdir(string_t directory)
 {
-    auto locals = py::dict("directory"_a = directory);
-    py::exec(R"(
-             import os
-             if not os.path.exists(directory) and directory != '':
-                 os.makedirs(directory)
-             )",
-             py::globals(), locals);
+    tim::makedir(directory);
 }
 //
 //--------------------------------------------------------------------------------------//
@@ -194,15 +178,12 @@ safe_mkdir(string_t directory)
 void
 ensure_directory_exists(string_t file_path)
 {
-    auto locals = py::dict("file_path"_a = file_path);
-    py::exec(R"(
-             import os
-
-             directory = os.path.dirname(file_path)
-             if not os.path.exists(directory) and directory != '':
-                 os.makedirs(directory)
-             )",
-             py::globals(), locals);
+    auto npos = std::string::npos;
+    if((npos = file_path.find_last_of("/\\")) != std::string::npos)
+    {
+        auto dir = file_path.substr(0, npos);
+        tim::makedir(dir);
+    }
 }
 //
 //--------------------------------------------------------------------------------------//
@@ -210,18 +191,12 @@ ensure_directory_exists(string_t file_path)
 py::object
 parse_args(py::object parser)
 {
-    auto locals = py::dict("parser"_a = parser);
-    py::exec(R"(
-             import timemory
-
-             args = parser.parse_args()
-
-             # copy over values
-             timemory.settings.dart_output = args.timemory_echo_dart
-             timemory.options.matplotlib_backend = args.timemory_mpl_backend
-             )",
-             py::globals(), locals);
-    return locals["args"].cast<py::object>();
+    auto msettings                      = py::module::import("timemory.settings");
+    auto moptions                       = py::module::import("timemory.options");
+    auto args                           = parser.attr("parse_args")();
+    msettings.attr("dart_output")       = args.attr("timemory_echo_dart");
+    moptions.attr("matplotlib_backend") = args.attr("timemory_mpl_backend");
+    return args;
 }
 //
 //--------------------------------------------------------------------------------------//
@@ -229,21 +204,16 @@ parse_args(py::object parser)
 py::object
 parse_known_args(py::object parser)
 {
-    auto locals = py::dict("parser"_a = parser);
-    py::exec(R"(
-             import timemory
-
-             args, left = parser.parse_known_args()
-
-             # replace sys.argv with unknown args only
-             sys.argv = sys.argv[:1]+left
-
-             # copy over values
-             timemory.settings.dart_output = args.timemory_echo_dart
-             timemory.options.matplotlib_backend = args.timemory_mpl_backend
-             )",
-             py::globals(), locals);
-    return locals["args"].cast<py::object>();
+    auto       msys                     = py::module::import("sys");
+    auto       msettings                = py::module::import("timemory.settings");
+    auto       moptions                 = py::module::import("timemory.options");
+    py::list   kargs                    = parser.attr("parse_known_args")();
+    py::object args                     = kargs[0];
+    py::list   left                     = kargs[1].cast<py::list>();
+    msys.attr("argv")                   = msys.attr("argv")[0].cast<py::list>() + left;
+    msettings.attr("dart_output")       = args.attr("timemory_echo_dart");
+    moptions.attr("matplotlib_backend") = args.attr("timemory_mpl_backend");
+    return args;
 }
 //
 //--------------------------------------------------------------------------------------//

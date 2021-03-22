@@ -37,6 +37,7 @@ __email__ = "jrmadsen@lbl.gov"
 __status__ = "Development"
 
 import os
+import importlib
 
 os.environ.setdefault("TIMEMORY_BANNER", "OFF")
 os.environ.setdefault("PROFILESELECTED", "1")
@@ -138,14 +139,14 @@ if os.environ.get("TIMEMORY_CXX_PLOT_MODE", None) is not None:
 else:
     _loaded_bindings = True
     try:
-        from . import libpytimemory
+        libpytimemory = importlib.import_module(".libpytimemory", __name__)
     except Exception:
         _loaded_bindings = False
         __load_component_libs()
 
     try:
         if not _loaded_bindings:
-            from . import libpytimemory
+            libpytimemory = importlib.import_module(".libpytimemory", __name__)
 
         from .libpytimemory import (
             report,
