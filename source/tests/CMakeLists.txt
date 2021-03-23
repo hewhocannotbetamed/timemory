@@ -779,43 +779,52 @@ if(TARGET timemory-mallocp-shared)
 endif()
 
 if(TIMEMORY_USE_PYTHON AND PYTHON_EXECUTABLE)
-    # test showing linked libraries of python module
-    if(APPLE)
-        find_program(OTOOL_EXE NAMES otool)
-        if(OTOOL_EXE)
-            set(LINKAGE_COMMAND ${OTOOL_EXE} -L)
-        endif()
-    elseif("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
-        find_program(LDD_EXE NAMES ldd)
-        if(LDD_EXE)
-            set(LINKAGE_COMMAND ${LDD_EXE})
-        endif()
-    endif()
-
-    if(LINKAGE_COMMAND)
-        add_test(
-            NAME                python_module_linkage
-            COMMAND             ${LINKAGE_COMMAND} $<TARGET_FILE:libpytimemory>
-            WORKING_DIRECTORY   ${PROJECT_BINARY_DIR})
-    endif()
-
     add_test(
         NAME                python_tests
         COMMAND             ${PYTHON_EXECUTABLE} -m timemory.test -v -v
         WORKING_DIRECTORY   ${PROJECT_BINARY_DIR})
 endif()
 
+# compiled libraries
+set(_COMPILED_LIBS
+    ${TIMEMORY_TOOL_LIBRARIES}
+    ${TIMEMORY_COMPILED_LIBRARIES}
+    ${TIMEMORY_INTERMEDIATE_LIBRARIES})
+list(REMOVE_DUPLICATES _COMPILED_LIBS)
+if(TARGET libpytimemory AND NOT "libpytimemory" IN_LIST _COMPILED_LIBS)
+    list(APPEND _COMPILED_LIBS "libpytimemory")
+endif()
+
+# Tests recording the linked object dump of each compiled library
+# test showing linked libraries of python module
+set(LINKAGE_COMMAND)
+if(APPLE)
+    find_program(OTOOL_EXE NAMES otool)
+    if(OTOOL_EXE)
+        set(LINKAGE_COMMAND ${OTOOL_EXE} -l)
+    endif()
+elseif("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
+    find_program(LDD_EXE NAMES ldd)
+    if(LDD_EXE)
+        set(LINKAGE_COMMAND ${LDD_EXE} -d)
+    endif()
+endif()
+
+if(LINKAGE_COMMAND)
+    foreach(_LIB ${_COMPILED_LIBS})
+        if(NOT TARGET ${_LIB})
+            continue()
+        endif()
+        add_test(
+            NAME                linkage-${_LIB}
+            COMMAND             ${LINKAGE_COMMAND} $<TARGET_FILE:${_LIB}>
+            WORKING_DIRECTORY   ${PROJECT_BINARY_DIR})
+    endforeach()
+endif()
+
 # Tests recording the symbols of each compiled library
 find_program(NM_EXE NAMES nm)
 if(NM_EXE)
-    set(_COMPILED_LIBS
-        ${TIMEMORY_TOOL_LIBRARIES}
-        ${TIMEMORY_COMPILED_LIBRARIES}
-        ${TIMEMORY_INTERMEDIATE_LIBRARIES})
-    list(REMOVE_DUPLICATES _COMPILED_LIBS)
-    if(TARGET libpytimemory AND NOT "libpytimemory" IN_LIST _COMPILED_LIBS)
-        list(APPEND _COMPILED_LIBS "libpytimemory")
-    endif()
     foreach(_LIB ${_COMPILED_LIBS})
         if(NOT TARGET ${_LIB})
             continue()
