@@ -843,11 +843,9 @@ components(py::module& _pymod, std::array<bool, N>& _boolgen,
 //
 //--------------------------------------------------------------------------------------//
 //
-template <size_t... Idx>
-static auto
-get_available(std::index_sequence<Idx...>)
+template <size_t N, size_t... Idx>
+static auto get_available(std::index_sequence<Idx...>)
 {
-    constexpr size_t    N = sizeof...(Idx);
     std::array<bool, N> _avail_array;
     _avail_array.fill(false);
     TIMEMORY_FOLD_EXPRESSION(
@@ -887,7 +885,7 @@ generate(py::module& _pymod)
         auto _enum_val = pytim::get_enum(_obj);
         if(_enum_val >= TIMEMORY_COMPONENTS_END)
             return false;
-        static auto _available = pyinternal::get_available(
+        static auto _available = pyinternal::get_available<TIMEMORY_COMPONENTS_END>(
             tim::mpl::make_available_index_sequence<TIMEMORY_NATIVE_COMPONENTS_END>{});
         return _available.at(static_cast<size_t>(_enum_val));
     };

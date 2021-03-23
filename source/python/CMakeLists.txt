@@ -166,7 +166,8 @@ if(TIMEMORY_BUILD_PYTHON)
     endif()
 
     target_compile_definitions(libpytimemory-interface INTERFACE
-        TIMEMORY_PYBIND11_SOURCE)
+        TIMEMORY_PYBIND11_SOURCE
+        WITH_THREAD)
 
     target_include_directories(libpytimemory-interface SYSTEM INTERFACE
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/external/pybind11/include>)

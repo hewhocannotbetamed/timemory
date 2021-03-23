@@ -201,7 +201,7 @@ include(Options)
 #----------------------------------------------------------------------------------------#
 
 if(TIMEMORY_BUILD_DEVELOPER OR TIMEMORY_USE_CTP)
-    find_package(compile-time-perf QUIET)
+    find_package(compile-time-perf)
     if(compile-time-perf_FOUND)
         enable_compile_time_perf(timemory-compile-time
             LINK

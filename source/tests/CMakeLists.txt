@@ -945,7 +945,7 @@ if(TIMEMORY_USE_DYNINST AND TIMEMORY_BUILD_GOOGLE_TEST AND NOT TIMEMORY_USE_COVE
     endforeach()
 endif()
 
-if(TIMEMORY_USE_CTP AND compile-time-perf_ANALYZER_EXECUTABLE)
+if(TIMEMORY_USE_CTP AND TARGET analyze-timemory-compile-time)
     add_test(
         NAME                compile-time-perf
         COMMAND             ${CMAKE_COMMAND}
