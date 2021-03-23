@@ -269,6 +269,8 @@ else()
     endif()
 endif()
 
+add_rpath(${PYTHON_LIBRARIES})
+
 if(TIMEMORY_BUILD_PYTHON OR pybind11_FOUND)
     timemory_target_compile_definitions(timemory-python INTERFACE TIMEMORY_USE_PYTHON)
     target_link_libraries(timemory-python INTERFACE ${PYTHON_LIBRARIES})

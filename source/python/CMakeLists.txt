@@ -77,8 +77,8 @@ function(TIMEMORY_CONFIGURE_PYTARGET _TARGET)
     elseif(APPLE)
         set_target_properties(${_TARGET} PROPERTIES
             MACOSX_RPATH                TRUE
-            BUILD_RPATH                 "${PROJECT_BINARY_DIR};${PROJECT_BINARY_DIR}/components"
-            INSTALL_RPATH               "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+            BUILD_RPATH                 "${PROJECT_BINARY_DIR}:${PROJECT_BINARY_DIR}/components"
+            INSTALL_RPATH               "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}:${CMAKE_INSTALL_RPATH}")
     endif()
 
     install(TARGETS ${_TARGET}

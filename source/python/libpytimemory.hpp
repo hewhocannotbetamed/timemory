@@ -40,11 +40,9 @@
 #include "timemory/timemory.hpp"
 
 #include "pybind11/cast.h"
-#include "pybind11/embed.h"
 #include "pybind11/eval.h"
 #include "pybind11/functional.h"
 #include "pybind11/iostream.h"
-#include "pybind11/numpy.h"
 #include "pybind11/pybind11.h"
 #include "pybind11/pytypes.h"
 #include "pybind11/stl.h"
@@ -71,6 +69,12 @@ using namespace py::literals;
 using namespace tim::component;
 
 using manager_t = tim::manager;
+
+extern "C"
+{
+    extern PyObject*      PyEval_GetBuiltins();
+    extern PyThreadState* PyThreadState_Get();
+}
 
 namespace pytim
 {
