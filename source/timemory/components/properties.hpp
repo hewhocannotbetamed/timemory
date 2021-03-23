@@ -276,4 +276,83 @@ using properties_t = typename enumerator<Idx>::type;
 //--------------------------------------------------------------------------------------//
 //
 }  // namespace component
+//
+//--------------------------------------------------------------------------------------//
+//
+namespace mpl
+{
+namespace impl
+{
+template <size_t... Indexes>
+struct Index_tuple
+{};
+
+// Concatenates two Index_tuples.
+template <typename Itup1, typename Itup2>
+struct Itup_cat;
+
+template <size_t... Ind1, size_t... Ind2>
+struct Itup_cat<Index_tuple<Ind1...>, Index_tuple<Ind2...>>
+{
+    using type = Index_tuple<Ind1..., (Ind2 + sizeof...(Ind1))...>;
+};
+
+template <typename... Tp>
+struct index_concat;
+
+template <size_t... Idx>
+struct index_concat<Index_tuple<Idx...>>
+{
+    using type = Index_tuple<Idx...>;
+};
+
+template <size_t... Lhs, size_t... Rhs>
+struct index_concat<Index_tuple<Lhs...>, Index_tuple<Rhs...>>
+{
+    using type = Index_tuple<Lhs..., Rhs...>;
+};
+
+template <size_t... Lhs, typename... Rhs>
+struct index_concat<Index_tuple<Lhs...>, Rhs...>
+{
+    using type = typename index_concat<Index_tuple<Lhs...>,
+                                       typename index_concat<Rhs...>::type>::type;
+};
+
+template <size_t Idx>
+struct avail_index_seq
+{
+    using type = std::conditional_t<component::enumerator<Idx>::value, Index_tuple<Idx>,
+                                    Index_tuple<>>;
+};
+
+template <typename... Tp>
+struct convert_index_seq;
+
+template <size_t... Idx>
+struct convert_index_seq<Index_tuple<Idx...>>
+{
+    using type = std::index_sequence<Idx...>;
+};
+
+template <typename... Tp>
+struct available_index_sequence;
+
+template <size_t... Idx>
+struct available_index_sequence<std::index_sequence<Idx...>>
+{
+    using type = typename convert_index_seq<
+        typename index_concat<typename avail_index_seq<Idx>::type...>::type>::type;
+};
+
+}  // namespace impl
+
+template <size_t NumT>
+using make_available_index_sequence =
+    typename impl::available_index_sequence<std::make_index_sequence<NumT>>::type;
+
+}  // namespace mpl
+//
+//--------------------------------------------------------------------------------------//
+//
 }  // namespace tim

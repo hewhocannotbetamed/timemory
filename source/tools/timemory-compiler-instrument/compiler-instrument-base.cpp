@@ -417,7 +417,9 @@ allocate()
 
     auto tidx = tim::threading::get_id();
     tim::consume_parameters(
-        tidx, get_storage(tim::make_index_sequence<TIMEMORY_COMPONENTS_END>{}));
+        tidx,
+        get_storage(
+            tim::mpl::make_available_index_sequence<TIMEMORY_NATIVE_COMPONENTS_END>{}));
 }
 
 //--------------------------------------------------------------------------------------//
@@ -683,8 +685,8 @@ struct pthread_gotcha : tim::component::base<pthread_gotcha, void>
             if(_wrapper->debug())
                 PRINT_HERE("%s", "Initializing timemory component storage");
             // initialize the storage
-            tim::consume_parameters(
-                get_storage(tim::make_index_sequence<TIMEMORY_COMPONENTS_END>{}));
+            tim::consume_parameters(get_storage(tim::mpl::make_available_index_sequence<
+                                                TIMEMORY_NATIVE_COMPONENTS_END>{}));
             if(_wrapper->debug())
                 PRINT_HERE("%s", "Executing original function");
             // execute the original function

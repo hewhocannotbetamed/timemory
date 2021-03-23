@@ -11,6 +11,7 @@ ProcessorCount(NCPU)
 # if set, will screw up loading library
 unset(CMAKE_DEBUG_POSTFIX)
 
+set(CMAKE_BUILD_TYPE Debug)
 set(_visibility timemory::timemory-default-visibility)
 set(CMAKE_CXX_CLANG_TIDY)
 set(CMAKE_UNITY_BUILD ON)

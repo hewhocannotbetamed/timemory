@@ -168,7 +168,8 @@ construct(py::module& _pymod, tim::type_list<Tp...>)
 void
 generate(py::module& _pymod)
 {
-    auto _types = construct(std::make_index_sequence<TIMEMORY_NATIVE_COMPONENTS_END>{});
+    auto _types = construct(
+        tim::mpl::make_available_index_sequence<TIMEMORY_NATIVE_COMPONENTS_END>{});
     // std::cerr << "Types: " << tim::demangle<decltype(_types)>() << std::endl;
     construct(_pymod, _types);
     (void) _types;

@@ -73,7 +73,7 @@ generate(py::module& _pymod)
     py::enum_<TIMEMORY_NATIVE_COMPONENT> _pyenum(
         _pymod, "id", py::arithmetic(), "Component enumerations for timemory module");
     pyenumeration::components(_pyenum,
-                              std::make_index_sequence<TIMEMORY_COMPONENTS_END>{});
+                              std::make_index_sequence<TIMEMORY_NATIVE_COMPONENTS_END>{});
     _pyenum.export_values();
     return _pyenum;
 }

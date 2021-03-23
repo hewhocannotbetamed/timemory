@@ -505,7 +505,8 @@ generate(py::module& _pymod)
         "push/pop routines either implicitly (via decorators/context-managers) or "
         "explicitly (via timemory.component classes)");
 
-    auto _types = construct(std::make_index_sequence<TIMEMORY_NATIVE_COMPONENTS_END>{});
+    auto _types = construct(
+        tim::mpl::make_available_index_sequence<TIMEMORY_NATIVE_COMPONENTS_END>{});
     construct(_pystorage, _types);
     return _pystorage;
 }

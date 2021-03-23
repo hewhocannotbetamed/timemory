@@ -71,24 +71,24 @@ manager_wrapper::get()
 namespace impl
 {
 //
+template <typename Tp>
+using dmp_basic_tree_t = std::vector<std::vector<tim::basic_tree<tim::node::tree<Tp>>>>;
+//
 template <typename Tp, typename Archive>
 auto
-get_json(Archive& ar, const pytim::pyenum_set_t& _types,
-         tim::enable_if_t<tim::trait::is_available<Tp>::value, int>)
-    -> decltype(tim::storage<Tp>::instance()->dmp_get(ar), void())
+get_json(Archive& ar, const pytim::pyenum_set_t& _types, int) -> decltype(
+    tim::storage<Tp>::instance()->dmp_get(std::declval<dmp_basic_tree_t<Tp>&>()), void())
 {
     if(_types.empty() || _types.count(tim::component::properties<Tp>{}()) > 0)
     {
         if(!tim::storage<Tp>::instance()->empty())
         {
-            auto data = std::vector<std::vector<tim::basic_tree<tim::node::tree<Tp>>>>{};
+            auto data = dmp_basic_tree_t<Tp>{};
             tim::storage<Tp>::instance()->dmp_get(data);
             tim::operation::serialization<Tp>{}(ar, data);
         }
     }
 }
-//
-//--------------------------------------------------------------------------------------//
 //
 template <typename Tp, typename Archive>
 auto
@@ -100,9 +100,7 @@ get_json(Archive&, const pytim::pyenum_set_t&, long)
 template <typename Tp, typename ValueT = typename Tp::value_type, typename StreamT>
 auto
 get_stream(StreamT& strm, const pytim::pyenum_set_t& _types,
-           tim::enable_if_t<tim::trait::is_available<Tp>::value &&
-                                !tim::concepts::is_null_type<ValueT>::value,
-                            int>)
+           tim::enable_if_t<!tim::concepts::is_null_type<ValueT>::value, int>)
     -> decltype(tim::storage<Tp>::instance()->dmp_get(), void())
 {
     using printer_t = tim::operation::finalize::print<Tp, true>;
@@ -131,9 +129,10 @@ get_stream(StreamT& strm, const pytim::pyenum_set_t& _types,
 //
 //--------------------------------------------------------------------------------------//
 //
-template <typename Tp, typename StreamT>
+template <typename Tp, typename ValueT = typename Tp::value_type, typename StreamT>
 auto
-get_stream(StreamT&, const pytim::pyenum_set_t&, long)
+get_stream(StreamT&, const pytim::pyenum_set_t&,
+           tim::enable_if_t<tim::concepts::is_null_type<ValueT>::value, long>)
 {}
 //
 }  // namespace impl
@@ -142,19 +141,10 @@ get_stream(StreamT&, const pytim::pyenum_set_t&, long)
 
 template <typename Tp, typename Archive>
 auto
-get_json(Archive& ar, const pytim::pyenum_set_t& _types,
-         tim::enable_if_t<tim::trait::is_available<Tp>::value, int> = 0)
+get_json(Archive& ar, const pytim::pyenum_set_t& _types)
 {
     impl::get_json<Tp>(ar, _types, 0);
 }
-
-//--------------------------------------------------------------------------------------//
-
-template <typename Tp, typename Archive>
-auto
-get_json(Archive&, const pytim::pyenum_set_t&,
-         tim::enable_if_t<!tim::trait::is_available<Tp>::value, long> = 0)
-{}
 
 //--------------------------------------------------------------------------------------//
 
@@ -162,30 +152,21 @@ template <typename Archive, size_t... Idx>
 auto
 get_json(Archive& ar, const pytim::pyenum_set_t& _types, std::index_sequence<Idx...>)
 {
-    TIMEMORY_FOLD_EXPRESSION(get_json<tim::decay_t<enumerator_t<Idx>>>(ar, _types, 0));
+    TIMEMORY_FOLD_EXPRESSION(get_json<tim::decay_t<enumerator_t<Idx>>>(ar, _types));
 }
 
 //--------------------------------------------------------------------------------------//
 
 template <typename Tp, typename StreamT>
 auto
-get_stream(StreamT& strm, const pytim::pyenum_set_t& _types,
-           tim::enable_if_t<tim::trait::is_available<Tp>::value, int> = 0)
+get_stream(StreamT& strm, const pytim::pyenum_set_t& _types)
 {
     return impl::get_stream<Tp>(strm, _types, 0);
 }
 
 //--------------------------------------------------------------------------------------//
 
-template <typename Tp, typename StreamT>
-auto
-get_stream(StreamT&, const pytim::pyenum_set_t&,
-           tim::enable_if_t<!tim::trait::is_available<Tp>::value, long> = 0)
-{}
-
-//--------------------------------------------------------------------------------------//
-
-template <size_t... Idx, size_t N = sizeof...(Idx)>
+template <size_t N, size_t... Idx>
 auto
 get_stream(const pytim::pyenum_set_t& _types, std::index_sequence<Idx...>)
 {
@@ -194,7 +175,7 @@ get_stream(const pytim::pyenum_set_t& _types, std::index_sequence<Idx...>)
 
     auto strms = stream_array_t{};
     TIMEMORY_FOLD_EXPRESSION(
-        get_stream<tim::decay_t<enumerator_t<Idx>>>(std::get<Idx>(strms), _types, 0));
+        get_stream<tim::decay_t<enumerator_t<Idx>>>(std::get<Idx>(strms), _types));
     return strms;
 }
 
@@ -217,21 +198,21 @@ extern "C" PYBIND11_MAYBE_UNUSED PYBIND11_EXPORT PyObject*
 extern "C" PYBIND11_EXPORT PyObject*
                            PyInit_libpytimemory()
 {
-    puts("[libpytimemory]> enabling signal handling...");
+    fputs("[libpytimemory]> enabling signal handling...", stderr);
     tim::enable_signal_detection();
-    puts("[libpytimemory]> checking python version...");
+    fputs("[libpytimemory]> checking python version...", stderr);
     PYBIND11_CHECK_PYTHON_VERSION
-    puts("[libpytimemory]> ensuring internals are ready...");
+    fputs("[libpytimemory]> ensuring internals are ready...", stderr);
     PYBIND11_ENSURE_INTERNALS_READY
 
-    puts("[libpytimemory]> creating extension module...");
+    fputs("[libpytimemory]> creating extension module...", stderr);
     auto m = ::pybind11::module_::create_extension_module(
         PYBIND11_TOSTRING(name), nullptr, &PYBIND11_CONCAT(pybind11_module_def_, name));
     try
     {
-        puts("[libpytimemory]> initializing...");
+        fputs("[libpytimemory]> initializing...", stderr);
         PYBIND11_CONCAT(pybind11_init_, name)(m);
-        puts("[libpytimemory]> loaded.");
+        fputs("[libpytimemory]> loaded.", stderr);
         return m.ptr();
     }
     PYBIND11_CATCH_INIT_EXCEPTIONS
@@ -239,7 +220,7 @@ extern "C" PYBIND11_EXPORT PyObject*
 
 void PYBIND11_CONCAT(pybind11_init_, name)(::pybind11::module_& variable)
 {
-    puts("[libpytimemory]> starting definition...");
+    fputs("[libpytimemory]> starting definition...", stderr);
 
 #undef name
 #undef variable
@@ -516,7 +497,9 @@ void PYBIND11_CONCAT(pybind11_init_, name)(::pybind11::module_& variable)
             auto oa           = policy_type::get(ss);
             oa->setNextName("timemory");
             oa->startNode();
-            get_json(*oa, _types, std::make_index_sequence<TIMEMORY_COMPONENTS_END>{});
+            get_json(*oa, _types,
+                     tim::mpl::make_available_index_sequence<
+                         TIMEMORY_NATIVE_COMPONENTS_END>{});
             oa->finishNode();
         }
         if(tim::settings::debug())
@@ -534,8 +517,9 @@ void PYBIND11_CONCAT(pybind11_init_, name)(::pybind11::module_& variable)
     //----------------------------------------------------------------------------------//
     auto _as_text = [](py::list _pytypes) {
         std::stringstream ss;
-        auto              strms = get_stream(pytim::get_enum_set(_pytypes),
-                                std::make_index_sequence<TIMEMORY_COMPONENTS_END>{});
+        auto              strms = get_stream<TIMEMORY_NATIVE_COMPONENTS_END>(
+            pytim::get_enum_set(_pytypes),
+            tim::mpl::make_available_index_sequence<TIMEMORY_NATIVE_COMPONENTS_END>{});
         for(auto& itr : strms)
         {
             if(itr)
@@ -977,5 +961,5 @@ void PYBIND11_CONCAT(pybind11_init_, name)(::pybind11::module_& variable)
                 py::arg("port"), py::arg("max_packets") = 0);
 #endif
 
-    puts("[libpytimemory]> definition completed...");
+    fputs("[libpytimemory]> definition completed...", stderr);
 }

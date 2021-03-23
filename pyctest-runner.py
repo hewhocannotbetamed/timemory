@@ -1381,6 +1381,7 @@ def run_pyctest():
                     "LABELS": pyct.PROJECT_NAME,
                     "TIMEOUT": "120",
                     "ENVIRONMENT": base_env,
+                    "PASS_REGULAR_EXPRESSION": ".*(children).*",
                 },
             )
 

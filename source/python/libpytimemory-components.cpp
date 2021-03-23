@@ -881,14 +881,14 @@ generate(py::module& _pymod)
     _keygen.fill(pyinternal::keyset_t{ {}, []() -> py::function { return py::none{}; } });
 
     pyinternal::components(_pycomp, _boolgen, _keygen,
-                           std::make_index_sequence<TIMEMORY_COMPONENTS_END>{});
+                           std::make_index_sequence<TIMEMORY_NATIVE_COMPONENTS_END>{});
 
     auto _is_available = [](py::object _obj) {
         auto _enum_val = pytim::get_enum(_obj);
         if(_enum_val >= TIMEMORY_COMPONENTS_END)
             return false;
         static auto _available = pyinternal::get_available(
-            tim::make_index_sequence<TIMEMORY_COMPONENTS_END>{});
+            tim::mpl::make_available_index_sequence<TIMEMORY_NATIVE_COMPONENTS_END>{});
         return _available.at(static_cast<size_t>(_enum_val));
     };
 
