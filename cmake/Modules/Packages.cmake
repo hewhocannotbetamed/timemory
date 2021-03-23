@@ -713,10 +713,6 @@ if(TIMEMORY_BUILD_GOOGLE_TEST)
     # add google-test
     set(INSTALL_GTEST OFF CACHE BOOL "Install gtest")
     set(BUILD_GMOCK ON CACHE BOOL "Build gmock")
-    if(APPLE)
-        set(CMAKE_MACOSX_RPATH ON CACHE BOOL "Enable MACOS_RPATH on targets to suppress warnings")
-        mark_as_advanced(CMAKE_MACOSX_RPATH)
-    endif()
     add_subdirectory(${PROJECT_SOURCE_DIR}/external/google-test)
     target_link_libraries(timemory-google-test INTERFACE gtest gmock)
     target_include_directories(timemory-google-test SYSTEM INTERFACE

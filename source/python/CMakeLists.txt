@@ -60,7 +60,7 @@ function(TIMEMORY_CONFIGURE_PYTARGET _TARGET)
         ARCHIVE_OUTPUT_DIRECTORY    ${PROJECT_BINARY_DIR}/timemory${_SUBDIR}
         RUNTIME_OUTPUT_DIRECTORY    ${PROJECT_BINARY_DIR}/timemory${_SUBDIR}
         PDB_OUTPUT_DIRECTORY        ${PROJECT_BINARY_DIR}/timemory${_SUBDIR}
-        INSTALL_RPATH_USE_LINK_PATH ON
+        INSTALL_RPATH_USE_LINK_PATH TRUE
         ${EXTRA_PROPERTIES})
 
     set(_PYLIB ${CMAKE_INSTALL_PYTHONDIR}/timemory${_SUBDIR})
@@ -75,8 +75,10 @@ function(TIMEMORY_CONFIGURE_PYTARGET _TARGET)
         set_target_properties(${_TARGET} PROPERTIES INSTALL_RPATH
             "\$ORIGIN/${LIB_RELPATH}:\$ORIGIN/${LIB_RELPATH}/timemory${_SUBDIR}:\$ORIGIN/../../..:\   $ORIGIN/../../../timemory${_SUBDIR}:\$ORIGIN:${CMAKE_INSTALL_RPATH}")
     elseif(APPLE)
-        set_target_properties(${_TARGET} PROPERTIES INSTALL_RPATH
-            "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+        set_target_properties(${_TARGET} PROPERTIES
+            MACOSX_RPATH                TRUE
+            BUILD_RPATH                 "${PROJECT_BINARY_DIR};${PROJECT_BINARY_DIR}/components"
+            INSTALL_RPATH               "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
     endif()
 
     install(TARGETS ${_TARGET}

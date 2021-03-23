@@ -222,7 +222,9 @@ endif()
 # set(CMAKE_CUDA_STANDARD ${CMAKE_CXX_STANDARD})
 
 add_option(CMAKE_INSTALL_RPATH_USE_LINK_PATH "Embed RPATH using link path" ON)
-
+if(APPLE)
+    add_option(CMAKE_MACOSX_RPATH "Shared libraries are to be found at runtime using runtime paths (rpaths)" ON NO_FEATURE)
+endif()
 
 # Install settings
 add_option(TIMEMORY_INSTALL_HEADERS "Install the header files" ON)
