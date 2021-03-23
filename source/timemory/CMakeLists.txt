@@ -18,52 +18,57 @@ foreach(_DEF ${_DEFAULT_CMAKE_DEFINES})
 endforeach()
 set(${PROJECT_NAME}_DEFAULT_CMAKE_DEFINES "${${PROJECT_NAME}_DEFAULT_CMAKE_DEFINES}\n")
 
+# configure once to generate list of cmakedefine
 configure_file(${PROJECT_SOURCE_DIR}/cmake/Templates/defines.h.in
-    ${CMAKE_CURRENT_BINARY_DIR}/defines.h.in @ONLY)
+    ${CMAKE_CURRENT_BINARY_DIR}/temporary/defines.h.in @ONLY)
 
-configure_file(${CMAKE_CURRENT_BINARY_DIR}/defines.h.in
-    ${CMAKE_CURRENT_BINARY_DIR}/defines.h @ONLY)
+# configure second time to populate cmakedefine
+configure_file(${CMAKE_CURRENT_BINARY_DIR}/temporary/defines.h.in
+    ${CMAKE_CURRENT_BINARY_DIR}/temporary/defines.h @ONLY)
 
+# configure version file
 configure_file(${PROJECT_SOURCE_DIR}/cmake/Templates/version.h.in
-    ${CMAKE_CURRENT_BINARY_DIR}/version.h @ONLY)
+    ${CMAKE_CURRENT_BINARY_DIR}/temporary/version.h @ONLY)
 
+# define where the configured files where be put
 if(timemory_MASTER_PROJECT)
-    if(TIMEMORY_INSTALL_HEADERS)
-        install(
-            FILES
-                ${CMAKE_CURRENT_BINARY_DIR}/defines.h
-                ${CMAKE_CURRENT_BINARY_DIR}/version.h
-            DESTINATION
-                ${CMAKE_INSTALL_INCLUDEDIR}/timemory
-            OPTIONAL)
-    endif()
+    set(CONFIG_FILE_OUTDIR ${CMAKE_CURRENT_BINARY_DIR})
 else()
-    execute_process(
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            ${CMAKE_CURRENT_BINARY_DIR}/defines.h
-            ${CMAKE_CURRENT_LIST_DIR}/defines.h
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        ERROR_VARIABLE ERR_MSG
-        RESULT_VARIABLE RET
-    )
-    execute_process(
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            ${CMAKE_CURRENT_BINARY_DIR}/version.h
-            ${CMAKE_CURRENT_LIST_DIR}/version.h
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        ERROR_VARIABLE ERR_MSG
-        RESULT_VARIABLE RET
-    )
-    if(TIMEMORY_INSTALL_HEADERS)
-        install(
-            FILES
-                ${CMAKE_CURRENT_LIST_DIR}/defines.h
-                ${CMAKE_CURRENT_LIST_DIR}/version.h
-            DESTINATION
-                ${CMAKE_INSTALL_INCLUDEDIR}/timemory
-            OPTIONAL)
-    endif()
+    set(CONFIG_FILE_OUTDIR ${CMAKE_CURRENT_LIST_DIR})
 endif()
+
+# only copy if different so that re-running cmake does not cause a rebuild
+execute_process(
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_CURRENT_BINARY_DIR}/temporary/defines.h
+        ${CONFIG_FILE_OUTDIR}/defines.h
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    ERROR_VARIABLE ERR_MSG
+    RESULT_VARIABLE RET
+)
+
+# only copy if different so that re-running cmake does not cause a rebuild
+execute_process(
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_CURRENT_BINARY_DIR}/temporary/version.h
+        ${CONFIG_FILE_OUTDIR}/version.h
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    ERROR_VARIABLE ERR_MSG
+    RESULT_VARIABLE RET
+)
+
+if(TIMEMORY_INSTALL_HEADERS)
+    # install the configured files
+    install(
+        FILES
+            ${CONFIG_FILE_OUTDIR}/defines.h
+            ${CONFIG_FILE_OUTDIR}/version.h
+        DESTINATION
+            ${CMAKE_INSTALL_INCLUDEDIR}/timemory
+        OPTIONAL)
+endif()
+
+unset(CONFIG_FILE_OUTDIR)
 
 file(GLOB_RECURSE header_files
     ${CMAKE_CURRENT_SOURCE_DIR}/utility/*.hpp

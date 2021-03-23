@@ -198,21 +198,21 @@ extern "C" PYBIND11_MAYBE_UNUSED PYBIND11_EXPORT PyObject*
 extern "C" PYBIND11_EXPORT PyObject*
                            PyInit_libpytimemory()
 {
-    fputs("[libpytimemory]> enabling signal handling...", stderr);
+    fputs("[libpytimemory]> enabling signal handling...\n", stderr);
     tim::enable_signal_detection();
-    fputs("[libpytimemory]> checking python version...", stderr);
+    fputs("[libpytimemory]> checking python version...\n", stderr);
     PYBIND11_CHECK_PYTHON_VERSION
-    fputs("[libpytimemory]> ensuring internals are ready...", stderr);
+    fputs("[libpytimemory]> ensuring internals are ready...\n", stderr);
     PYBIND11_ENSURE_INTERNALS_READY
 
-    fputs("[libpytimemory]> creating extension module...", stderr);
+    fputs("[libpytimemory]> creating extension module...\n", stderr);
     auto m = ::pybind11::module_::create_extension_module(
         PYBIND11_TOSTRING(name), nullptr, &PYBIND11_CONCAT(pybind11_module_def_, name));
     try
     {
-        fputs("[libpytimemory]> initializing...", stderr);
+        fputs("[libpytimemory]> initializing...\n", stderr);
         PYBIND11_CONCAT(pybind11_init_, name)(m);
-        fputs("[libpytimemory]> loaded.", stderr);
+        fputs("[libpytimemory]> loaded.\n", stderr);
         return m.ptr();
     }
     PYBIND11_CATCH_INIT_EXCEPTIONS
@@ -220,7 +220,7 @@ extern "C" PYBIND11_EXPORT PyObject*
 
 void PYBIND11_CONCAT(pybind11_init_, name)(::pybind11::module_& variable)
 {
-    fputs("[libpytimemory]> starting definition...", stderr);
+    fputs("[libpytimemory]> starting definition...\n", stderr);
 
 #undef name
 #undef variable
@@ -961,5 +961,5 @@ void PYBIND11_CONCAT(pybind11_init_, name)(::pybind11::module_& variable)
                 py::arg("port"), py::arg("max_packets") = 0);
 #endif
 
-    fputs("[libpytimemory]> definition completed...", stderr);
+    fputs("[libpytimemory]> definition completed...\n", stderr);
 }
