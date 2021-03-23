@@ -99,7 +99,8 @@ protected:
 //--------------------------------------------------------------------------------------//
 
 template <size_t... Idx>
-static constexpr auto sequence_size(std::index_sequence<Idx...>)
+static constexpr auto
+sequence_size(std::index_sequence<Idx...>)
 {
     return sizeof...(Idx);
 }
@@ -107,7 +108,8 @@ static constexpr auto sequence_size(std::index_sequence<Idx...>)
 //--------------------------------------------------------------------------------------//
 
 template <typename... Tp, size_t... Idx>
-static auto print_available(tim::type_list<Tp...>, std::index_sequence<Idx...>)
+static auto
+print_available(tim::type_list<Tp...>, std::index_sequence<Idx...>)
 {
     std::cout << "\ntypes [t] : \n  "
               << TIMEMORY_JOIN(
