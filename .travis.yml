@@ -53,8 +53,8 @@ install:
       python -m pip install mpi4py;
     fi
   - if [ "${CONDA_OS}" = "MacOSX" ]; then
-      export DYLD_LIBRARY_PATH=${HOME}/miniconda/envs/pyctest/lib:${DYLD_LIBRARY_PATH}
-      export DYLD_FALLBACK_LIBRARY_PATH=${HOME}/miniconda/envs/pyctest/lib:${HOME}/miniconda/lib:${DYLD_FALLBACK_LIBRARY_PATH}
+      export DYLD_LIBRARY_PATH=${HOME}/miniconda/envs/pyctest/lib:${DYLD_LIBRARY_PATH};
+      export DYLD_FALLBACK_LIBRARY_PATH=${HOME}/miniconda/envs/pyctest/lib:${HOME}/miniconda/lib:${DYLD_FALLBACK_LIBRARY_PATH};
     fi
 
 script:
