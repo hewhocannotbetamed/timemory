@@ -79,7 +79,7 @@ private:
     {
         static T t;
         //! Forces instantiation at pre-execution time
-        (void) instance;
+        // (void) instance;
         return t;
     }
 
@@ -112,11 +112,11 @@ public:
     }
 
 private:
-    static T& instance;
+    // static T& instance;
 };
 
-template <class T>
-T& StaticObject<T>::instance = StaticObject<T>::create();
+// template <class T>
+// T& StaticObject<T>::instance = StaticObject<T>::create();
 }  // namespace detail
 }  // namespace cereal
 }  // namespace tim

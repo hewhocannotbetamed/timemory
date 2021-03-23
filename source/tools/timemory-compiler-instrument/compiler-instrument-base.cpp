@@ -115,9 +115,8 @@ using pthread_bundle_t = tim::auto_tuple<pthread_gotcha_t>;
 
 //--------------------------------------------------------------------------------------//
 
-template <size_t... Idx>
-static auto
-get_storage(tim::index_sequence<Idx...>) TIMEMORY_INTERNAL_NO_INSTRUMENT;
+template <size_t N, size_t... Idx>
+static auto get_storage(tim::index_sequence<Idx...>) TIMEMORY_INTERNAL_NO_INSTRUMENT;
 //
 template <size_t Idx, size_t N>
 static void
@@ -154,6 +153,7 @@ setup_gotcha() TIMEMORY_INTERNAL_NO_INSTRUMENT;
 namespace
 {
 bool        m_default_enabled = (std::atexit(&finalize), true);
+bool*       m_fully_finalized = new bool{ false };
 const void* null_site         = nullptr;
 }  // namespace
 
@@ -175,12 +175,13 @@ get_storage_impl(std::array<std::function<void()>, N>& _data)
 
 //--------------------------------------------------------------------------------------//
 
-template <size_t... Idx>
-auto
-get_storage(tim::index_sequence<Idx...>)
+template <size_t N, size_t... Idx>
+auto get_storage(tim::index_sequence<Idx...>)
 {
     // array of finalization functions
-    std::array<std::function<void()>, sizeof...(Idx)> _data{};
+    std::array<std::function<void()>, N> _data{};
+    // fill with empty functions
+    _data.fill([]() {});
     // initialize the storage in the thread
     TIMEMORY_FOLD_EXPRESSION(tim::storage_initializer::get<Idx>());
     // generate a function for finalizing
@@ -418,7 +419,7 @@ allocate()
     auto tidx = tim::threading::get_id();
     tim::consume_parameters(
         tidx,
-        get_storage(
+        get_storage<TIMEMORY_NATIVE_COMPONENTS_END>(
             tim::mpl::make_available_index_sequence<TIMEMORY_NATIVE_COMPONENTS_END>{}));
 }
 
@@ -432,12 +433,18 @@ finalize()
 
     get_thread_enabled() = false;
 
+    if(m_fully_finalized && *m_fully_finalized)
+        return;
+
     // acquire a thread-local lock so that no more entries are added while finalizing
     tim::trace::lock<tim::trace::compiler> lk{};
     lk.acquire();
 
     // acquire global lock
-    tim::auto_lock_t _projlk{ tim::type_mutex<tim::project::compiler_instrument>() };
+    static auto&     _projmtx = tim::type_mutex<tim::project::compiler_instrument>();
+    tim::auto_lock_t _projlk{ _projmtx, std::defer_lock };
+    if(!_projlk.owns_lock())
+        _projlk.lock();
 
     bool _remove_manager = false;
     if(get_trace_vec())
@@ -504,6 +511,8 @@ finalize()
         assert(wc.get() > 0.0);
         assert(pr.get() > 0.0);
 #endif
+        if(m_fully_finalized)
+            *m_fully_finalized = true;
     }
 
     if(_remove_manager)
@@ -685,8 +694,9 @@ struct pthread_gotcha : tim::component::base<pthread_gotcha, void>
             if(_wrapper->debug())
                 PRINT_HERE("%s", "Initializing timemory component storage");
             // initialize the storage
-            tim::consume_parameters(get_storage(tim::mpl::make_available_index_sequence<
-                                                TIMEMORY_NATIVE_COMPONENTS_END>{}));
+            tim::consume_parameters(get_storage<TIMEMORY_NATIVE_COMPONENTS_END>(
+                tim::mpl::make_available_index_sequence<
+                    TIMEMORY_NATIVE_COMPONENTS_END>{}));
             if(_wrapper->debug())
                 PRINT_HERE("%s", "Executing original function");
             // execute the original function
