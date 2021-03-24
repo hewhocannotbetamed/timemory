@@ -29,6 +29,7 @@ jobs:
 
 before_install:
   # - if [ -d /Library/Developer ]; then sudo rm -Rf /Library/Developer/CommandLineTools/SDKs/* ; fi
+  - if [ "${CONDA_OS}" = "MacOSX" ]; then sudo xcode-select --install; fi
   - which -a ${CC}
   - which -a ${CXX}
   - if [ -f /usr/bin/${CC} ]; then export CC=/usr/bin/${CC}; fi

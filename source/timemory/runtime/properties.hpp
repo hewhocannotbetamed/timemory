@@ -69,9 +69,7 @@ get_hash(std::string&& key)
 //--------------------------------------------------------------------------------------//
 //
 template <int I, typename... Args, typename Ip = component::enumerator_t<I>>
-enable_if_t<component::enumerator<I>::value &&
-                !concepts::is_runtime_configurable<Ip>::value,
-            void>
+enable_if_t<component::enumerator<I>::value, void>
 do_enumerator_generate(std::vector<opaque_pair_t>& opaque_array, int idx, Args&&... args)
 {
     using type = component::enumerator_t<I>;
@@ -89,9 +87,7 @@ do_enumerator_generate(std::vector<opaque_pair_t>& opaque_array, int idx, Args&&
 //--------------------------------------------------------------------------------------//
 //
 template <int I, typename... Args, typename Ip = component::enumerator_t<I>>
-enable_if_t<!component::enumerator<I>::value ||
-                concepts::is_runtime_configurable<Ip>::value,
-            void>
+enable_if_t<!component::enumerator<I>::value, void>
 do_enumerator_generate(std::vector<opaque_pair_t>&, int, Args&&...)
 {}
 //
@@ -102,9 +98,7 @@ do_enumerator_generate(std::vector<opaque_pair_t>&, int, Args&&...)
 //--------------------------------------------------------------------------------------//
 //
 template <int I, typename Tp, typename... Args, typename Ip = component::enumerator_t<I>>
-enable_if_t<component::enumerator<I>::value &&
-                !concepts::is_runtime_configurable<Ip>::value,
-            void>
+enable_if_t<component::enumerator<I>::value, void>
 do_enumerator_init(Tp& obj, int idx, Args&&... args)
 {
     using type = component::enumerator_t<I>;
@@ -118,9 +112,7 @@ do_enumerator_init(Tp& obj, int idx, Args&&... args)
 //--------------------------------------------------------------------------------------//
 //
 template <int I, typename Tp, typename... Args, typename Ip = component::enumerator_t<I>>
-enable_if_t<!component::enumerator<I>::value ||
-                concepts::is_runtime_configurable<Ip>::value,
-            void>
+enable_if_t<!component::enumerator<I>::value, void>
 do_enumerator_init(Tp&, int, Args&&...)
 {}
 //
@@ -133,8 +125,7 @@ do_enumerator_enumerate(component_match_vector_t& _vec, component_match_index_t&
 {
     using type            = component::enumerator_t<I>;
     constexpr auto _is_ph = concepts::is_placeholder<type>::value;
-    constexpr auto _is_rt = concepts::is_runtime_configurable<type>::value;
-    IF_CONSTEXPR(!_is_ph && !_is_rt)
+    IF_CONSTEXPR(!_is_ph)
     {
         std::string _id = component::properties<type>::id();
         if(_id != "TIMEMORY_COMPONENTS_END")
