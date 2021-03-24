@@ -82,6 +82,8 @@ script:
       export DYLD_INSERT_LIBRARIES=/Applications/Xcode-12.for.macOS.Universal.Apps.beta.2.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/12.0.0/lib/darwin/libclang_rt.asan_osx_dynamic.dylib;
       export DYLD_FORCE_FLAT_NAMESPACE=1;
       python${TRAVIS_PYTHON_VERSION} -c "import timemory";
+      cd timemory;
+      python${TRAVIS_PYTHON_VERSION} -c "import libpytimemory";
     fi
   - cd ${TIMEMORY_SOURCE_DIRECTORY}/examples && mkdir build-examples && cd build-examples
   - cmake -DTIMEMORY_BUILD_C_EXAMPLES=ON .. && make ex_array_of_bundles
